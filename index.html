@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Packliste</title>
+<meta name="description" content="Modulare Packliste">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1C4A42">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Packliste">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFEBE2; --paper-2:#E5E0D5; --ink:#15201C;
+  --petrol:#1C4A42; --petrol-2:#2E6A5F; --signal:#F0B429;
+  --rope:#CDC6B6; --dim:#6E6A5F; --alert:#9A3B28; --radius:3px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.45;padding-bottom:70px}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px}
+
+header.top{background:var(--petrol);color:var(--paper);padding:22px 0 0}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--signal)}
+h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:34px;
+  letter-spacing:-.02em;margin:2px 0 14px}
+.tripbar{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+#tripName{flex:1 1 200px;min-width:0;background:rgba(255,255,255,.08);
+  border:1px solid rgba(239,235,226,.28);color:var(--paper);
+  font-family:"IBM Plex Sans",sans-serif;font-size:16px;font-weight:500;
+  padding:9px 11px;border-radius:var(--radius)}
+#tripName::placeholder{color:rgba(239,235,226,.5)}
+.days{display:flex;align-items:center;border:1px solid rgba(239,235,226,.28);
+  border-radius:var(--radius);overflow:hidden}
+.days button{background:rgba(255,255,255,.08);border:0;color:var(--paper);
+  font-size:19px;width:38px;height:40px;cursor:pointer;font-family:"IBM Plex Mono",monospace}
+.days button:hover{background:rgba(255,255,255,.18)}
+.days span{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;
+  padding:0 12px;min-width:74px;text-align:center;white-space:nowrap}
+
+.meter{margin:18px 0 0;padding-bottom:16px}
+.meter-head{display:flex;justify-content:space-between;align-items:baseline;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.meter-head b{color:var(--signal);font-size:14px}
+.bars{display:flex;gap:3px;height:12px}
+.bar{flex:1;background:rgba(239,235,226,.16);position:relative;overflow:hidden;min-width:6px}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--signal);width:0;
+  transition:width .35s cubic-bezier(.2,.7,.3,1)}
+body.editing .meter{display:none}
+
+.notice{background:var(--signal);color:var(--ink);font-size:13.5px;font-weight:500;
+  padding:11px 0;display:none}
+.notice.show{display:block}
+
+.panel{border-bottom:1px solid var(--rope)}
+.panel-head{width:100%;background:none;border:0;padding:15px 0;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;color:var(--ink);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase}
+.panel-head .caret{font-size:13px;transition:transform .2s}
+.panel[data-open="false"] .panel-body{display:none}
+.panel[data-open="false"] .caret{transform:rotate(-90deg)}
+.panel-body{padding-bottom:18px}
+.grp{margin-bottom:14px}
+.grp-label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:500;
+  background:var(--paper-2);border:1px solid var(--rope);color:var(--ink);
+  padding:7px 12px;border-radius:var(--radius);cursor:pointer;
+  transition:background .12s,color .12s,transform .08s}
+.chip:hover{border-color:var(--petrol-2)}
+.chip:active{transform:translateY(1px)}
+.chip[aria-pressed="true"]{background:var(--petrol);border-color:var(--petrol);color:var(--paper)}
+
+/* ---------- Packliste ---------- */
+.cat{margin:22px 0 0}
+.cat-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.cat-head h2{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:.02em;margin:0;text-transform:uppercase}
+.cat-head .rule{flex:1;height:1px;background:var(--rope)}
+.cat-head .n{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--dim)}
+.item{display:flex;align-items:flex-start;gap:11px;padding:9px 0;
+  border-bottom:1px solid rgba(205,198,182,.55)}
+.box{flex:none;width:21px;height:21px;margin-top:1px;border:1.5px solid var(--petrol);
+  border-radius:var(--radius);background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0}
+.box svg{width:13px;height:13px;opacity:0;transition:opacity .12s}
+.item.done .box{background:var(--petrol)}
+.item.done .box svg{opacity:1}
+.item .name{flex:1;cursor:pointer;min-width:0}
+.item.done .name{color:var(--dim);text-decoration:line-through;text-decoration-thickness:1px}
+.qty{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;
+  color:var(--petrol-2);background:var(--paper-2);padding:1px 6px;
+  border-radius:var(--radius);margin-left:7px;white-space:nowrap}
+.item.done .qty{color:var(--dim);background:transparent}
+.tags{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--dim);
+  letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+
+/* ---------- Werkstatt (Board) ---------- */
+#board{display:none;margin-top:18px}
+body.editing #board{display:block}
+body.editing #list,body.editing .actions .hide-edit{display:none}
+.board-hint{font-size:13.5px;color:var(--dim);margin-bottom:12px}
+.board{display:flex;gap:12px;overflow-x:auto;padding:2px 18px 16px;margin:0 -18px;
+  scroll-snap-type:x proximity}
+.col{flex:0 0 min(80vw,268px);scroll-snap-align:start;background:var(--paper-2);
+  border:1px solid var(--rope);border-radius:5px;padding:11px;align-self:flex-start}
+.col-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.col-head h3{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.03em;margin:0;flex:1;line-height:1.2}
+.col-head .cnt{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim)}
+.col-head button{background:none;border:0;color:var(--petrol);font-size:14px;cursor:pointer;padding:2px 3px}
+.card{width:100%;text-align:left;background:var(--paper);border:1px solid var(--rope);
+  border-radius:var(--radius);padding:8px 9px;margin-bottom:6px;cursor:pointer;display:block;
+  font-family:inherit;font-size:14.5px;color:var(--ink)}
+.card:hover{border-color:var(--petrol-2)}
+.card.off{opacity:.5}
+.card .cn{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .cq{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--petrol-2);white-space:nowrap}
+.card .cm{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--dim);
+  letter-spacing:.05em;text-transform:uppercase;margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col .add{width:100%;background:none;border:1px dashed var(--rope);color:var(--dim);
+  border-radius:var(--radius);padding:8px;font-size:13.5px;cursor:pointer;font-family:inherit}
+.col .add:hover{border-color:var(--petrol-2);color:var(--petrol)}
+.col.newcol{display:flex;align-items:center;justify-content:center;border-style:dashed;
+  background:none;min-height:96px;flex:0 0 min(60vw,190px)}
+.col.newcol button{background:none;border:0;color:var(--dim);font-size:14px;cursor:pointer;
+  font-family:inherit;padding:20px 10px}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 8px}
+.btn{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:600;
+  background:transparent;border:1.5px solid var(--petrol);color:var(--petrol);
+  padding:9px 14px;border-radius:var(--radius);cursor:pointer}
+.btn:hover{background:var(--petrol);color:var(--paper)}
+.btn.primary{background:var(--petrol);color:var(--paper)}
+.btn.primary:hover{background:var(--petrol-2);border-color:var(--petrol-2)}
+.btn.ghost{border-color:var(--rope);color:var(--dim)}
+.btn.ghost:hover{background:var(--rope);color:var(--ink)}
+.btn.danger{border-color:var(--alert);color:var(--alert)}
+.btn.danger:hover{background:var(--alert);color:var(--paper)}
+.btn.sm{font-size:13px;padding:6px 10px}
+
+/* ---------- Reisen ---------- */
+.trips{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--rope)}
+.tripcard{background:var(--paper-2);border:1px solid var(--rope);border-radius:5px;
+  padding:13px 14px;margin-bottom:10px}
+.tripcard .th{display:flex;align-items:baseline;gap:10px}
+.tripcard .tn{font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:700;flex:1;min-width:0}
+.tripcard .td{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  color:var(--paper);background:var(--petrol);padding:2px 7px;border-radius:var(--radius);white-space:nowrap}
+.tripcard .tm{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 0}
+.tripcard .tm span{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;
+  text-transform:uppercase;background:var(--paper);border:1px solid var(--rope);
+  padding:3px 7px;border-radius:var(--radius);color:var(--dim)}
+.tripcard .tf{display:flex;align-items:center;gap:8px;margin-top:12px}
+.tripcard .tf .cnt{flex:1;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--dim)}
+.empty{color:var(--dim);font-size:14.5px;padding:26px 0;text-align:center;
+  border:1px dashed var(--rope);border-radius:var(--radius);margin-top:20px}
+
+.backup{margin:28px 0 0;padding-top:16px;border-top:1px solid var(--rope)}
+.backup p{font-size:13.5px;color:var(--dim);margin:6px 0 12px}
+#backupBox{width:100%;height:90px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  border:1px solid var(--rope);border-radius:var(--radius);background:var(--paper-2);
+  color:var(--ink);padding:9px;display:none}
+#backupBox.show{display:block}
+
+/* ---------- Sheet ---------- */
+.sheet{position:fixed;inset:0;background:rgba(21,32,28,.5);z-index:20;
+  display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet-card{background:var(--paper);width:100%;max-width:640px;
+  border-radius:8px 8px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  max-height:92vh;overflow-y:auto}
+.sheet h3{font-family:"Space Grotesk",sans-serif;font-size:19px;margin:0 0 16px}
+.field{margin-bottom:15px}
+.field label{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.field input,.field select{width:100%;font-family:"IBM Plex Sans",sans-serif;font-size:16px;
+  padding:10px;border:1px solid var(--rope);border-radius:var(--radius);
+  background:var(--paper-2);color:var(--ink)}
+.row{display:flex;gap:10px}
+.row>div{flex:1;min-width:0}
+.inline-add{display:flex;gap:7px;margin-top:8px}
+.inline-add input{flex:1}
+.preview{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--petrol);
+  background:var(--paper-2);border-left:3px solid var(--signal);padding:9px 11px;
+  border-radius:var(--radius);margin-top:4px}
+.sheet-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;align-items:center}
+.sheet-actions .spacer{flex:1}
+#qScale{display:none}
+#qFix{display:none}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);
+  background:var(--ink);color:var(--paper);font-size:14px;font-weight:500;
+  padding:11px 18px;border-radius:var(--radius);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;z-index:30}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:420px){h1{font-size:29px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Modulare Packliste</div>
+    <h1>Was muss mit?</h1>
+    <div class="tripbar">
+      <input id="tripName" placeholder="Wohin geht's?" autocomplete="off">
+      <div class="days">
+        <button id="dMinus" aria-label="Ein Tag weniger">&minus;</button>
+        <span id="dLabel">4 Tage</span>
+        <button id="dPlus" aria-label="Ein Tag mehr">+</button>
+      </div>
+    </div>
+    <div class="meter">
+      <div class="meter-head"><span id="mLeft">Noch nichts ausgewählt</span><b id="mRight">0 / 0</b></div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </div>
+</header>
+
+<div class="notice" id="notice"><div class="wrap">Dieser Browser lässt kein Speichern zu (privater Modus?). Änderungen gehen beim Neuladen verloren – nutz unten die Sicherung.</div></div>
+
+<div class="wrap">
+  <section class="panel" id="panel" data-open="true">
+    <button class="panel-head" id="panelToggle" aria-expanded="true">
+      <span>Bausteine <span id="modCount" style="color:var(--dim)"></span></span>
+      <span class="caret">&#9662;</span>
+    </button>
+    <div class="panel-body" id="modules"></div>
+  </section>
+
+  <main id="list"></main>
+
+  <section id="board">
+    <p class="board-hint">Alle Items nach Kategorien – auch die aus Bausteinen, die gerade nicht aktiv sind (blass dargestellt). Spalten seitlich wischen.</p>
+    <div class="board" id="boardCols"></div>
+  </section>
+
+  <div class="actions">
+    <button class="btn primary hide-edit" id="saveTrip">Reise speichern</button>
+    <button class="btn hide-edit" id="copyList">Als Text kopieren</button>
+    <button class="btn ghost" id="editToggle">Kategorien &amp; Items</button>
+    <button class="btn ghost hide-edit" id="uncheck">Haken löschen</button>
+  </div>
+
+  <section class="trips" id="trips"></section>
+
+  <section class="backup">
+    <div class="grp-label">Sicherung</div>
+    <p>Kopier dir den Text ab und zu weg (Notizen, Mail an dich selbst). Damit lassen sich alle Reisen, Kategorien und Items wiederherstellen.</p>
+    <div class="actions" style="margin:0 0 10px">
+      <button class="btn ghost sm" id="bkExport">Sicherung kopieren</button>
+      <button class="btn ghost sm" id="bkImportOpen">Sicherung einspielen</button>
+    </div>
+    <textarea id="backupBox" placeholder="Sicherungstext hier einfügen und auf Einspielen tippen"></textarea>
+    <div class="actions" id="bkImportRow" style="display:none;margin:10px 0 0">
+      <button class="btn danger sm" id="bkImport">Jetzt einspielen &amp; überschreiben</button>
+    </div>
+  </section>
+</div>
+
+<!-- Item-Editor -->
+<div class="sheet" id="sheet">
+  <div class="sheet-card">
+    <h3 id="sheetTitle">Item ändern</h3>
+    <div class="field">
+      <label for="fName">Name</label>
+      <input id="fName" autocomplete="off" placeholder="z. B. Ersatzbrille">
+    </div>
+    <div class="field">
+      <label for="fCat">Kategorie</label>
+      <select id="fCat"></select>
+    </div>
+    <div class="field">
+      <label>Gehört zu diesen Bausteinen</label>
+      <div class="chips" id="fMods"></div>
+      <div class="inline-add">
+        <input id="fNewMod" placeholder="Eigener Baustein, z. B. Skitour" autocomplete="off">
+        <button class="btn sm" id="modAddBtn">Anlegen</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fRule">Menge</label>
+      <select id="fRule">
+        <option value="fix">Feste Anzahl</option>
+        <option value="scale">Hängt von der Reisedauer ab</option>
+      </select>
+    </div>
+    <div id="qFix" class="field">
+      <label for="fQty">Anzahl</label>
+      <input id="fQty" type="number" min="1" max="99" value="1" inputmode="numeric">
+    </div>
+    <div id="qScale">
+      <div class="field row">
+        <div><label for="fY">Stück</label><input id="fY" type="number" min="1" max="99" value="4" inputmode="numeric"></div>
+        <div><label for="fX">je … Tage</label><input id="fX" type="number" min="1" max="30" value="3" inputmode="numeric"></div>
+      </div>
+      <div class="field row">
+        <div><label for="fPlus">Reserve</label><input id="fPlus" type="number" min="0" max="20" value="0" inputmode="numeric"></div>
+        <div><label for="fCap">Höchstens</label><input id="fCap" type="number" min="1" max="99" value="10" inputmode="numeric"></div>
+      </div>
+      <div class="preview" id="qPrev"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn danger sm" id="fDelete">Löschen</button>
+      <button class="btn ghost sm" id="fReset" style="display:none">Auf Standard</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="fCancel">Abbrechen</button>
+      <button class="btn primary" id="fSave">Sichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kategorie-Editor -->
+<div class="sheet" id="catSheet">
+  <div class="sheet-card">
+    <h3 id="catTitle">Kategorie ändern</h3>
+    <div class="field">
+      <label for="cName">Name</label>
+      <input id="cName" autocomplete="off" placeholder="z. B. Werkstatt">
+    </div>
+    <div class="field" id="cMoveWrap">
+      <label>Reihenfolge</label>
+      <div class="row">
+        <button class="btn ghost" id="cLeft" style="flex:1">&#9664; nach vorn</button>
+        <button class="btn ghost" id="cRight" style="flex:1">nach hinten &#9654;</button>
+      </div>
+    </div>
+    <div class="field" id="cDelWrap">
+      <label for="cTarget">Beim Löschen: Items verschieben nach</label>
+      <select id="cTarget"></select>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn danger sm" id="cDelete">Kategorie löschen</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="cCancel">Abbrechen</button>
+      <button class="btn primary" id="cSave">Sichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ Stammdaten ============ */
+const BASE_CATS=[["dok","Dokumente & Geld"],["kleid","Kleidung"],["hyg","Hygiene & Gesundheit"],
+  ["tech","Technik"],["sport","Sport & Ausrüstung"],["camp","Camping & Küche"],["sonst","Sonstiges"]];
+const BASE_GROUPS=[
+  ["Klima & Wetter",[["warm","Warm / Sommer"],["kalt","Kalt"],["regen","Regen"]]],
+  ["Unterkunft",[["hotel","Hotel"],["zelt","Zelt / Camping"],["fewo","Ferienwohnung / Hütte"]]],
+  ["Anreise",[["zug","Zug"],["flug","Flug"],["auto","Auto"],["radreise","Mit dem Rad"]]],
+  ["Aktivitäten",[["laufen","Laufen"],["rad","Radfahren"],["schwimmen","Schwimmen"],["wettkampf","Wettkampf"],
+    ["wandern","Wandern"],["musik","Musik"],["leitung","Gruppenleitung"],["uni","Uni / Arbeiten"],["ausgehen","Ausgehen"]]],
+  ["Besonderes",[["ausland","Ausland / Nicht-EU"]]]
+];
+/* r = {y Stück, x je Tage, p Reserve, c Höchstens} */
+const LIB=[
+{n:"Personalausweis",c:"dok",m:["basis"]},{n:"Krankenversichertenkarte",c:"dok",m:["basis"]},
+{n:"EC- / Kreditkarte",c:"dok",m:["basis"]},{n:"Bargeld",c:"dok",m:["basis"]},{n:"Schlüssel",c:"dok",m:["basis"]},
+{n:"Unterwäsche",c:"kleid",m:["basis"],r:{y:4,x:3,p:0,c:12}},
+{n:"Socken",c:"kleid",m:["basis"],r:{y:4,x:3,p:0,c:12}},
+{n:"T-Shirts",c:"kleid",m:["basis"],r:{y:2,x:3,p:1,c:8}},
+{n:"Lange Hose",c:"kleid",m:["basis"]},{n:"Pullover / Hoodie",c:"kleid",m:["basis"]},
+{n:"Leichte Jacke",c:"kleid",m:["basis"]},{n:"Schlafshirt",c:"kleid",m:["basis"]},
+{n:"Zahnbürste & Zahnpasta",c:"hyg",m:["basis"]},{n:"Deo",c:"hyg",m:["basis"]},
+{n:"Duschgel & Shampoo",c:"hyg",m:["basis"]},{n:"Bürste / Kamm",c:"hyg",m:["basis"]},
+{n:"Taschentücher",c:"hyg",m:["basis"]},{n:"Persönliche Medikamente",c:"hyg",m:["basis"]},
+{n:"Pflaster & Schmerztabletten",c:"hyg",m:["basis"]},{n:"Handy",c:"tech",m:["basis"]},
+{n:"Ladekabel & Netzteil",c:"tech",m:["basis"]},{n:"Kopfhörer",c:"tech",m:["basis"]},
+{n:"Powerbank",c:"tech",m:["basis"]},{n:"Trinkflasche",c:"sonst",m:["basis"]},
+{n:"Tagesrucksack",c:"sonst",m:["basis"]},{n:"Wäschebeutel",c:"sonst",m:["basis"]},
+{n:"Shorts",c:"kleid",m:["warm"],r:{y:1,x:2,p:0,c:4}},{n:"Leichtes Hemd",c:"kleid",m:["warm"]},
+{n:"Sandalen / Flip-Flops",c:"kleid",m:["warm","schwimmen"]},{n:"Sonnenbrille",c:"sonst",m:["warm"]},
+{n:"Cap / Sonnenhut",c:"kleid",m:["warm"]},{n:"Sonnencreme",c:"hyg",m:["warm"]},
+{n:"Mückenspray",c:"hyg",m:["warm","zelt"]},{n:"Warme Jacke",c:"kleid",m:["kalt"]},
+{n:"Mütze",c:"kleid",m:["kalt"]},{n:"Handschuhe",c:"kleid",m:["kalt"]},{n:"Schal / Buff",c:"kleid",m:["kalt"]},
+{n:"Thermounterwäsche",c:"kleid",m:["kalt"]},{n:"Dicke Socken",c:"kleid",m:["kalt"]},
+{n:"Regenjacke",c:"kleid",m:["regen"]},{n:"Regenhose",c:"kleid",m:["regen"]},
+{n:"Wasserdichte Schuhe",c:"kleid",m:["regen"]},{n:"Packsack / Dry Bag",c:"sonst",m:["regen","radreise"]},
+{n:"Regenschirm",c:"sonst",m:["regen"]},{n:"Buchungsbestätigung",c:"dok",m:["hotel","fewo"]},
+{n:"Zelt inkl. Heringe",c:"camp",m:["zelt"]},{n:"Schlafsack",c:"camp",m:["zelt"]},
+{n:"Isomatte",c:"camp",m:["zelt"]},{n:"Kopfkissen (aufblasbar)",c:"camp",m:["zelt"]},
+{n:"Stirnlampe",c:"camp",m:["zelt","leitung","wandern"]},{n:"Campinggeschirr & Besteck",c:"camp",m:["zelt"]},
+{n:"Taschenmesser",c:"camp",m:["zelt"]},{n:"Gaskocher & Kartusche",c:"camp",m:["zelt"]},
+{n:"Feuerzeug",c:"camp",m:["zelt"]},{n:"Spüli & Schwamm",c:"camp",m:["zelt"]},
+{n:"Müllbeutel",c:"camp",m:["zelt","auto"]},{n:"Klopapier",c:"camp",m:["zelt"]},
+{n:"Wäscheleine",c:"camp",m:["zelt"]},{n:"Handtuch",c:"hyg",m:["zelt","fewo","schwimmen"]},
+{n:"Hausschuhe",c:"kleid",m:["fewo"]},{n:"Ticket & Reservierung",c:"dok",m:["zug"]},
+{n:"Snacks & Wasser",c:"sonst",m:["zug","auto"]},{n:"Buch / E-Reader",c:"sonst",m:["zug","flug"]},
+{n:"Nackenkissen",c:"sonst",m:["zug","flug"]},{n:"Schlafmaske & Ohrstöpsel",c:"sonst",m:["zug","flug"]},
+{n:"Reisepass",c:"dok",m:["flug","ausland"]},{n:"Bordkarte",c:"dok",m:["flug"]},
+{n:"Flüssigkeiten ≤ 100 ml im Beutel",c:"hyg",m:["flug"]},{n:"Powerbank ins Handgepäck",c:"tech",m:["flug"]},
+{n:"Führerschein",c:"dok",m:["auto"]},{n:"Fahrzeugschein",c:"dok",m:["auto"]},
+{n:"Warnweste & Parkscheibe",c:"sonst",m:["auto"]},{n:"Handyhalterung & Autoladekabel",c:"tech",m:["auto"]},
+{n:"Packtaschen",c:"sport",m:["radreise"]},{n:"Fahrradschloss",c:"sport",m:["radreise","rad"]},
+{n:"Front- & Rücklicht",c:"sport",m:["radreise"]},{n:"Multitool",c:"sport",m:["radreise","rad","wettkampf"]},
+{n:"Ersatzschlauch",c:"sport",m:["radreise","rad","wettkampf"],q:2},
+{n:"Flickzeug & Reifenheber",c:"sport",m:["radreise","rad"]},
+{n:"Minipumpe",c:"sport",m:["radreise","rad","wettkampf"]},{n:"Kettenöl",c:"sport",m:["radreise"]},
+{n:"Kabelbinder & Panzertape",c:"sport",m:["radreise"]},{n:"Ersatzbremsbeläge",c:"sport",m:["radreise"]},
+{n:"Laufschuhe",c:"sport",m:["laufen","wettkampf"]},
+{n:"Laufshirt",c:"sport",m:["laufen"],r:{y:1,x:2,p:1,c:5}},
+{n:"Laufhose / Tights",c:"sport",m:["laufen"]},
+{n:"Laufsocken",c:"sport",m:["laufen"],r:{y:1,x:2,p:1,c:6}},
+{n:"Sportuhr & Ladekabel",c:"tech",m:["laufen","rad","wettkampf"]},
+{n:"Brustgurt",c:"sport",m:["laufen","rad","wettkampf"]},
+{n:"Gels & Riegel",c:"sport",m:["laufen","rad","wandern"]},
+{n:"Helm",c:"sport",m:["rad","radreise","wettkampf"]},
+{n:"Radtrikot",c:"sport",m:["rad"],r:{y:1,x:2,p:1,c:5}},
+{n:"Radhose",c:"sport",m:["rad"],r:{y:1,x:2,p:0,c:4}},
+{n:"Radschuhe",c:"sport",m:["rad","wettkampf"]},{n:"Radhandschuhe",c:"sport",m:["rad"]},
+{n:"Radbrille",c:"sport",m:["rad"]},{n:"Sitzcreme",c:"hyg",m:["rad","radreise"]},
+{n:"Badehose",c:"kleid",m:["schwimmen","warm"]},{n:"Schwimmbrille",c:"sport",m:["schwimmen","wettkampf"]},
+{n:"Badekappe",c:"sport",m:["schwimmen","wettkampf"]},
+{n:"Mikrofaser-Handtuch",c:"hyg",m:["schwimmen","wandern"]},
+{n:"Startunterlagen & Startpass",c:"dok",m:["wettkampf"]},{n:"Trisuit",c:"sport",m:["wettkampf"]},
+{n:"Startnummernband",c:"sport",m:["wettkampf"]},{n:"Neoprenanzug",c:"sport",m:["wettkampf"]},
+{n:"Wechselbeutel",c:"sport",m:["wettkampf"]},{n:"Elektrolyte",c:"sport",m:["wettkampf"]},
+{n:"Bodyglide / Vaseline",c:"hyg",m:["wettkampf"]},{n:"Wechselmatte / Handtuch",c:"sport",m:["wettkampf"]},
+{n:"Recovery-Snack",c:"sport",m:["wettkampf"]},{n:"Wanderschuhe",c:"sport",m:["wandern"]},
+{n:"Wanderstöcke",c:"sport",m:["wandern"]},{n:"Offline-Karte / Tour geladen",c:"tech",m:["wandern","radreise"]},
+{n:"Blasenpflaster",c:"hyg",m:["wandern","laufen"]},{n:"Gitarre inkl. Gigbag",c:"sonst",m:["musik"]},
+{n:"Ukulele",c:"sonst",m:["musik"]},{n:"Kapodaster",c:"sonst",m:["musik"]},
+{n:"Ersatzsaiten",c:"sonst",m:["musik"]},{n:"Plektren",c:"sonst",m:["musik"]},
+{n:"Liederbuch",c:"sonst",m:["musik"]},{n:"Stimmgerät",c:"sonst",m:["musik"]},
+{n:"Teilnehmerliste & Notfallkontakte",c:"dok",m:["leitung"]},
+{n:"Erste-Hilfe-Set",c:"hyg",m:["leitung","radreise","wandern"]},{n:"Programmordner",c:"dok",m:["leitung"]},
+{n:"Spielematerial",c:"sonst",m:["leitung"]},{n:"Kartenspiel",c:"sonst",m:["leitung","zelt"]},
+{n:"Stifte & Papier",c:"sonst",m:["leitung","uni"]},{n:"Gruppenkasse",c:"dok",m:["leitung"]},
+{n:"Laptop & Netzteil",c:"tech",m:["uni"]},{n:"Notizbuch",c:"sonst",m:["uni"]},
+{n:"Unterlagen / Skripte",c:"dok",m:["uni"]},{n:"Schickes Oberteil",c:"kleid",m:["ausgehen"]},
+{n:"Schicke Hose",c:"kleid",m:["ausgehen"]},{n:"Schicke Schuhe",c:"kleid",m:["ausgehen"]},
+{n:"Parfum",c:"hyg",m:["ausgehen"]},{n:"Auslandskrankenversicherung",c:"dok",m:["ausland"]},
+{n:"Kopien wichtiger Dokumente",c:"dok",m:["ausland"]},{n:"Steckdosenadapter",c:"tech",m:["ausland"]},
+{n:"Fremdwährung",c:"dok",m:["ausland"]},{n:"Impfpass",c:"dok",m:["ausland"]},
+{n:"Roaming / eSIM geklärt",c:"tech",m:["ausland"]}
+];
+const slug=s=>s.toLowerCase().replace(/[äöüß]/g,c=>({"ä":"ae","ö":"oe","ü":"ue","ß":"ss"}[c]))
+  .replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")||"x";
+LIB.forEach(i=>i.id=slug(i.n));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=(el,min,max,def)=>{const v=parseInt(document.getElementById(el).value);
+  return isNaN(v)?def:Math.max(min,Math.min(max,v));};
+
+/* ============ Zustand ============ */
+const KEY="packliste:v1";
+const FRESH={tripName:"",days:4,active:[],checked:{},custom:[],removed:[],edits:{},
+  catNames:{},catOrder:[],catRemoved:[],mods:[],trips:[]};
+let S=Object.assign({},FRESH);
+let storageOk=true,saveTimer=null,editingId=null,sheetMods=[],editingCat=null;
+
+/* Speicher: localStorage des Geräts – kein Server, keine Anmeldung. */
+function probe(){
+  try{localStorage.setItem(KEY+":probe","1");localStorage.removeItem(KEY+":probe");}
+  catch(e){storageOk=false;document.getElementById("notice").classList.add("show");}
+}
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign({},FRESH,JSON.parse(raw));}catch(e){}
+  if(!S.catOrder.length) S.catOrder=BASE_CATS.map(c=>c[0]);
+  BASE_CATS.forEach(c=>{if(!S.catOrder.includes(c[0])&&!S.catRemoved.includes(c[0]))S.catOrder.push(c[0]);});
+}
+function save(){
+  if(!storageOk)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{localStorage.setItem(KEY,JSON.stringify(S));}
+    catch(e){storageOk=false;document.getElementById("notice").classList.add("show");}
+  },300);
+}
+
+/* ============ Kategorien & Bausteine ============ */
+function cats(){
+  return S.catOrder.filter(id=>!S.catRemoved.includes(id))
+    .map(id=>[id,S.catNames[id]||(BASE_CATS.find(c=>c[0]===id)||[,id])[1]]);
+}
+const catName=id=>(cats().find(c=>c[0]===id)||[,"–"])[1];
+function groups(){
+  const g=BASE_GROUPS.map(x=>[x[0],x[1].slice()]);
+  if(S.mods.length)g.push(["Eigene",S.mods.map(m=>[m.id,m.n])]);
+  return g;
+}
+function modLabel(id){
+  if(id==="basis")return "immer";
+  for(const [,mods] of groups())for(const [mid,n] of mods)if(mid===id)return n;
+  return id;
+}
+function allItems(){
+  return [...LIB,...S.custom].filter(i=>!S.removed.includes(i.id))
+    .map(i=>S.edits[i.id]?Object.assign({},i,S.edits[i.id]):i);
+}
+const isActive=i=>i.m.includes("basis")||i.m.some(m=>S.active.includes(m));
+const visible=()=>allItems().filter(isActive);
+function qtyOf(i,days){
+  const d=days===undefined?S.days:days;
+  if(i.r)return Math.max(1,Math.min(Math.ceil(d*i.r.y/i.r.x)+(i.r.p||0),i.r.c||99));
+  return i.q||1;
+}
+
+/* ============ Rendern ============ */
+function renderModules(){
+  const el=document.getElementById("modules");
+  el.innerHTML=groups().map(([label,mods])=>`
+    <div class="grp"><div class="grp-label">${esc(label)}</div>
+      <div class="chips">${mods.map(([id,name])=>
+        `<button class="chip" data-mod="${id}" aria-pressed="${S.active.includes(id)}">${esc(name)}</button>`
+      ).join("")}</div></div>`).join("");
+  el.querySelectorAll("[data-mod]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.mod;
+    S.active.includes(id)?S.active=S.active.filter(x=>x!==id):S.active.push(id);
+    renderModules();renderList();renderBoard();save();
+  });
+  document.getElementById("modCount").textContent=S.active.length?`· ${S.active.length} aktiv`:"";
+}
+
+function renderList(){
+  const items=visible(),el=document.getElementById("list");
+  if(!items.length){
+    el.innerHTML=`<div class="empty">Wähl oben ein paar Bausteine – die Liste baut sich von selbst.</div>`;
+    renderMeter([]);return;
+  }
+  const byCat=cats().map(([cid,cname])=>[cid,cname,items.filter(i=>i.c===cid)]).filter(c=>c[2].length);
+  const rest=items.filter(i=>!cats().some(c=>c[0]===i.c));
+  if(rest.length)byCat.push(["_rest","Ohne Kategorie",rest]);
+  el.innerHTML=byCat.map(([cid,cname,list])=>{
+    const done=list.filter(i=>S.checked[i.id]).length;
+    return `<section class="cat"><div class="cat-head"><h2>${esc(cname)}</h2><div class="rule"></div>
+      <span class="n">${done}/${list.length}</span></div>`+list.map(i=>{
+      const q=qtyOf(i),tags=i.m.filter(m=>m!=="basis").map(modLabel).join(" · ");
+      return `<div class="item ${S.checked[i.id]?"done":""}" data-id="${i.id}">
+        <button class="box" aria-label="Abhaken" aria-pressed="${!!S.checked[i.id]}">
+          <svg viewBox="0 0 14 14" fill="none" stroke="#EFEBE2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.4 5.4 11 12 3.4"/></svg>
+        </button>
+        <div class="name">${esc(i.n)}${q>1?`<span class="qty">×${q}</span>`:""}${tags?`<div class="tags">${esc(tags)}</div>`:""}</div>
+      </div>`;
+    }).join("")+`</section>`;
+  }).join("");
+  el.querySelectorAll(".item").forEach(row=>{
+    const id=row.dataset.id,t=()=>{S.checked[id]=!S.checked[id];renderList();save();};
+    row.querySelector(".box").onclick=t;row.querySelector(".name").onclick=t;
+  });
+  renderMeter(byCat);
+}
+
+function renderMeter(byCat){
+  const items=visible(),done=items.filter(i=>S.checked[i.id]).length;
+  document.getElementById("mRight").textContent=`${done} / ${items.length}`;
+  document.getElementById("mLeft").textContent=
+    !items.length?"Noch nichts ausgewählt":done===items.length?"Alles drin. Gute Reise!":`${items.length-done} offen`;
+  document.getElementById("bars").innerHTML=byCat.map(([,,l])=>{
+    const p=l.length?Math.round(l.filter(i=>S.checked[i.id]).length/l.length*100):0;
+    return `<div class="bar"><i style="width:${p}%"></i></div>`;
+  }).join("")||`<div class="bar"><i></i></div>`;
+}
+
+function renderBoard(){
+  const items=allItems(),el=document.getElementById("boardCols");
+  const known=cats().map(c=>c[0]);
+  const list=cats().map(([cid,cname])=>[cid,cname,items.filter(i=>i.c===cid)]);
+  const rest=items.filter(i=>!known.includes(i.c));
+  if(rest.length)list.push(["_rest","Ohne Kategorie",rest]);
+  el.innerHTML=list.map(([cid,cname,its])=>`
+    <div class="col">
+      <div class="col-head">
+        <h3>${esc(cname)}</h3><span class="cnt">${its.length}</span>
+        ${cid==="_rest"?"":`<button data-cat="${cid}" aria-label="Kategorie ändern">✎</button>`}
+      </div>
+      ${its.map(i=>{
+        const q=qtyOf(i),tags=i.m.filter(m=>m!=="basis").map(modLabel).join(" · ")||"immer dabei";
+        return `<button class="card ${isActive(i)?"":"off"}" data-item="${i.id}">
+          <span class="cn"><span>${esc(i.n)}</span>${q>1?`<span class="cq">×${q}</span>`:""}</span>
+          <span class="cm">${esc(tags)}</span></button>`;
+      }).join("")}
+      <button class="add" data-new="${cid==="_rest"?"sonst":cid}">+ Item</button>
+    </div>`).join("")+
+    `<div class="col newcol"><button id="newCat">+ Neue Kategorie</button></div>`;
+  el.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>openSheet(b.dataset.item));
+  el.querySelectorAll("[data-new]").forEach(b=>b.onclick=()=>openSheet(null,b.dataset.new));
+  el.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>openCat(b.dataset.cat));
+  const nc=document.getElementById("newCat");if(nc)nc.onclick=()=>openCat(null);
+}
+
+function renderTrips(){
+  const el=document.getElementById("trips");
+  if(!S.trips.length){el.innerHTML="";return;}
+  el.innerHTML=`<div class="grp-label">Gespeicherte Reisen</div>`+S.trips.map(t=>{
+    const n=allItems().filter(i=>i.m.includes("basis")||i.m.some(m=>t.active.includes(m))).length;
+    return `<div class="tripcard">
+      <div class="th"><span class="tn">${esc(t.name)}</span><span class="td">${t.days} ${t.days===1?"Tag":"Tage"}</span></div>
+      <div class="tm">${t.active.map(m=>`<span>${esc(modLabel(m))}</span>`).join("")}</div>
+      <div class="tf"><span class="cnt">${n} Items</span>
+        <button class="btn sm" data-load="${t.id}">Laden</button>
+        <button class="btn ghost sm" data-del="${t.id}">Löschen</button></div>
+    </div>`;}).join("");
+  el.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{
+    const t=S.trips.find(x=>x.id===b.dataset.load);
+    S.tripName=t.name;S.days=t.days;S.active=[...t.active];S.checked={};
+    document.getElementById("tripName").value=t.name;
+    renderDays();renderModules();renderList();renderBoard();save();toast(`„${t.name}" geladen`);
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    S.trips=S.trips.filter(x=>x.id!==b.dataset.del);renderTrips();save();
+  });
+}
+function renderDays(){document.getElementById("dLabel").textContent=S.days===1?"1 Tag":`${S.days} Tage`;}
+function renderAll(){renderModules();renderList();renderBoard();renderTrips();}
+
+/* ============ Item-Editor ============ */
+function openSheet(id,presetCat){
+  editingId=id;
+  const item=id?allItems().find(i=>i.id===id):null;
+  document.getElementById("sheetTitle").textContent=item?"Item ändern":"Neues Item";
+  document.getElementById("fName").value=item?item.n:"";
+  sheetMods=item?[...item.m]:(S.active.length?[S.active[0]]:["basis"]);
+  const c=item?item.c:(presetCat||cats()[0][0]);
+  document.getElementById("fCat").innerHTML=cats().map(([cid,cn])=>
+    `<option value="${cid}" ${cid===c?"selected":""}>${esc(cn)}</option>`).join("");
+  renderSheetMods();
+  const r=item&&item.r;
+  document.getElementById("fRule").value=r?"scale":"fix";
+  document.getElementById("fQty").value=item?(item.q||1):1;
+  document.getElementById("fY").value=r?r.y:4;
+  document.getElementById("fX").value=r?r.x:3;
+  document.getElementById("fPlus").value=r?(r.p||0):0;
+  document.getElementById("fCap").value=r?(r.c||12):12;
+  syncRule();
+  document.getElementById("fDelete").style.display=item?"":"none";
+  document.getElementById("fReset").style.display=(id&&S.edits[id])?"":"none";
+  document.getElementById("sheet").classList.add("open");
+  setTimeout(()=>document.getElementById("fName").focus(),60);
+}
+function closeSheet(){document.getElementById("sheet").classList.remove("open");editingId=null;}
+function renderSheetMods(){
+  const all=[["basis","Immer dabei"]].concat(...groups().map(g=>g[1]));
+  const box=document.getElementById("fMods");
+  box.innerHTML=all.map(([id,n])=>
+    `<button class="chip" data-sm="${id}" aria-pressed="${sheetMods.includes(id)}">${esc(n)}</button>`).join("");
+  box.querySelectorAll("[data-sm]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.sm;
+    if(id==="basis")sheetMods=sheetMods.includes("basis")?[]:["basis"];
+    else{sheetMods=sheetMods.filter(x=>x!=="basis");
+      sheetMods.includes(id)?sheetMods=sheetMods.filter(x=>x!==id):sheetMods.push(id);}
+    renderSheetMods();
+  });
+}
+function syncRule(){
+  const scale=document.getElementById("fRule").value==="scale";
+  document.getElementById("qScale").style.display=scale?"block":"none";
+  document.getElementById("qFix").style.display=scale?"none":"block";
+  if(scale)updatePreview();
+}
+function updatePreview(){
+  const r={y:num("fY",1,99,1),x:num("fX",1,30,1),p:num("fPlus",0,20,0),c:num("fCap",1,99,99)};
+  const show=[Math.max(1,S.days-2),S.days,S.days+3].filter((v,i,a)=>v>0&&a.indexOf(v)===i);
+  document.getElementById("qPrev").textContent=
+    show.map(d=>`${d} Tage → ${qtyOf({r},d)}`).join("   ·   ");
+}
+["fY","fX","fPlus","fCap"].forEach(id=>document.getElementById(id).oninput=updatePreview);
+document.getElementById("fRule").onchange=syncRule;
+document.getElementById("modAddBtn").onclick=()=>{
+  const n=document.getElementById("fNewMod").value.trim();
+  if(!n)return toast("Name fehlt");
+  const id="m-"+slug(n);
+  if(!S.mods.some(m=>m.id===id))S.mods.push({id,n});
+  if(!S.active.includes(id))S.active.push(id);
+  if(!sheetMods.includes(id)){sheetMods=sheetMods.filter(x=>x!=="basis");sheetMods.push(id);}
+  document.getElementById("fNewMod").value="";
+  renderSheetMods();renderModules();save();
+};
+document.getElementById("fSave").onclick=()=>{
+  const n=document.getElementById("fName").value.trim();
+  if(!n)return toast("Der Name fehlt noch");
+  if(!sheetMods.length)return toast("Wähl mindestens einen Baustein");
+  const patch={n,c:document.getElementById("fCat").value,m:[...sheetMods]};
+  if(document.getElementById("fRule").value==="scale"){
+    patch.r={y:num("fY",1,99,1),x:num("fX",1,30,1),p:num("fPlus",0,20,0),c:num("fCap",1,99,99)};
+    patch.q=1;
+  }else{patch.q=num("fQty",1,99,1);patch.r=null;}
+  if(editingId){
+    const custom=S.custom.find(i=>i.id===editingId);
+    if(custom)Object.assign(custom,patch);
+    else S.edits[editingId]=Object.assign({},S.edits[editingId],patch);
+  }else S.custom.push(Object.assign({id:slug(n)+"-"+Date.now().toString(36)},patch));
+  closeSheet();renderAll();save();toast("Gesichert");
+};
+document.getElementById("fDelete").onclick=()=>{
+  if(!editingId)return closeSheet();
+  if(!S.removed.includes(editingId))S.removed.push(editingId);
+  S.custom=S.custom.filter(i=>i.id!==editingId);delete S.edits[editingId];
+  closeSheet();renderAll();save();toast("Entfernt");
+};
+document.getElementById("fReset").onclick=()=>{
+  if(editingId)delete S.edits[editingId];
+  closeSheet();renderAll();save();toast("Auf Standard zurückgesetzt");
+};
+document.getElementById("fCancel").onclick=closeSheet;
+document.getElementById("sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet();};
+
+/* ============ Kategorie-Editor ============ */
+function openCat(id){
+  editingCat=id;
+  document.getElementById("catTitle").textContent=id?"Kategorie ändern":"Neue Kategorie";
+  document.getElementById("cName").value=id?catName(id):"";
+  document.getElementById("cMoveWrap").style.display=id?"block":"none";
+  document.getElementById("cDelWrap").style.display=id?"block":"none";
+  document.getElementById("cDelete").style.display=id?"":"none";
+  if(id)document.getElementById("cTarget").innerHTML=
+    cats().filter(c=>c[0]!==id).map(([cid,cn])=>`<option value="${cid}">${esc(cn)}</option>`).join("");
+  document.getElementById("catSheet").classList.add("open");
+  setTimeout(()=>document.getElementById("cName").focus(),60);
+}
+function closeCat(){document.getElementById("catSheet").classList.remove("open");editingCat=null;}
+function moveCat(dir){
+  const o=S.catOrder,i=o.indexOf(editingCat),j=i+dir;
+  if(i<0||j<0||j>=o.length)return;
+  o.splice(j,0,o.splice(i,1)[0]);renderAll();save();
+  toast("Reihenfolge geändert");
+}
+document.getElementById("cLeft").onclick=()=>moveCat(-1);
+document.getElementById("cRight").onclick=()=>moveCat(1);
+document.getElementById("cSave").onclick=()=>{
+  const n=document.getElementById("cName").value.trim();
+  if(!n)return toast("Der Name fehlt noch");
+  if(editingCat)S.catNames[editingCat]=n;
+  else{const id="c-"+slug(n)+"-"+Date.now().toString(36);
+    S.catNames[id]=n;S.catOrder.push(id);}
+  closeCat();renderAll();save();toast("Gesichert");
+};
+document.getElementById("cDelete").onclick=()=>{
+  if(!editingCat)return closeCat();
+  const target=document.getElementById("cTarget").value;
+  if(!target)return toast("Es braucht eine Zielkategorie");
+  allItems().filter(i=>i.c===editingCat).forEach(i=>{
+    const custom=S.custom.find(x=>x.id===i.id);
+    if(custom)custom.c=target;else S.edits[i.id]=Object.assign({},S.edits[i.id],{c:target});
+  });
+  if(!S.catRemoved.includes(editingCat))S.catRemoved.push(editingCat);
+  S.catOrder=S.catOrder.filter(c=>c!==editingCat);
+  closeCat();renderAll();save();toast("Kategorie gelöscht, Items verschoben");
+};
+document.getElementById("cCancel").onclick=closeCat;
+document.getElementById("catSheet").onclick=e=>{if(e.target.id==="catSheet")closeCat();};
+
+/* ============ Bedienung ============ */
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1900);
+}
+document.getElementById("dMinus").onclick=()=>{S.days=Math.max(1,S.days-1);renderDays();renderList();renderBoard();save();};
+document.getElementById("dPlus").onclick=()=>{S.days=Math.min(60,S.days+1);renderDays();renderList();renderBoard();save();};
+document.getElementById("tripName").oninput=e=>{S.tripName=e.target.value;save();};
+document.getElementById("panelToggle").onclick=()=>{
+  const p=document.getElementById("panel"),open=p.dataset.open==="true";
+  p.dataset.open=String(!open);
+  document.getElementById("panelToggle").setAttribute("aria-expanded",String(!open));
+};
+document.getElementById("editToggle").onclick=e=>{
+  const on=document.body.classList.toggle("editing");
+  e.target.textContent=on?"Fertig":"Kategorien & Items";
+  if(on)renderBoard();
+};
+document.getElementById("uncheck").onclick=()=>{S.checked={};renderList();save();toast("Haken zurückgesetzt");};
+document.getElementById("saveTrip").onclick=()=>{
+  const name=(S.tripName||"").trim();
+  if(!name)return toast("Gib der Reise oben einen Namen");
+  if(!S.active.length)return toast("Wähl mindestens einen Baustein");
+  S.trips=S.trips.filter(t=>t.name!==name);
+  S.trips.unshift({id:slug(name)+"-"+Date.now().toString(36),name,days:S.days,active:[...S.active]});
+  renderTrips();save();toast(`„${name}" gespeichert`);
+};
+async function copyText(txt,ok){
+  try{await navigator.clipboard.writeText(txt);toast(ok);}
+  catch(e){const b=document.getElementById("backupBox");
+    b.classList.add("show");b.value=txt;b.select();toast("Text markiert – manuell kopieren");}
+}
+document.getElementById("copyList").onclick=()=>{
+  const items=visible();
+  if(!items.length)return toast("Die Liste ist noch leer");
+  let out=`Packliste${S.tripName?" – "+S.tripName:""} (${S.days} Tage)\n`;
+  cats().forEach(([cid,cname])=>{
+    const l=items.filter(i=>i.c===cid);if(!l.length)return;
+    out+=`\n${cname.toUpperCase()}\n`;
+    l.forEach(i=>{const q=qtyOf(i);out+=`[${S.checked[i.id]?"x":" "}] ${i.n}${q>1?" ×"+q:""}\n`;});
+  });
+  copyText(out,"In die Zwischenablage kopiert");
+};
+document.getElementById("bkExport").onclick=()=>copyText(JSON.stringify(S),"Sicherung kopiert");
+document.getElementById("bkImportOpen").onclick=()=>{
+  const b=document.getElementById("backupBox");b.classList.toggle("show");
+  document.getElementById("bkImportRow").style.display=b.classList.contains("show")?"flex":"none";
+};
+document.getElementById("bkImport").onclick=()=>{
+  try{
+    const d=JSON.parse(document.getElementById("backupBox").value.trim());
+    if(!d||typeof d!=="object")throw 0;
+    S=Object.assign({},FRESH,d);
+    if(!S.catOrder.length)S.catOrder=BASE_CATS.map(c=>c[0]);
+    document.getElementById("tripName").value=S.tripName||"";
+    renderDays();renderAll();save();toast("Sicherung eingespielt");
+  }catch(e){toast("Das war kein gültiger Sicherungstext");}
+};
+
+/* ============ Start ============ */
+(function init(){
+  probe();load();
+  document.getElementById("tripName").value=S.tripName||"";
+  renderDays();renderAll();
+})();
+
+/* Offline-Betrieb */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
