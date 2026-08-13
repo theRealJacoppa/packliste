@@ -51,7 +51,9 @@ h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:34px;
 .days{display:flex;align-items:center;border:1px solid rgba(239,235,226,.28);
   border-radius:var(--radius);overflow:hidden}
 .days button{background:rgba(255,255,255,.08);border:0;color:var(--paper);
-  font-size:19px;width:38px;height:40px;cursor:pointer;font-family:"IBM Plex Mono",monospace}
+  font-size:19px;width:38px;height:40px;cursor:pointer;font-family:"IBM Plex Mono",monospace;
+  transition:background .15s ease,transform .12s ease}
+.days button:active{transform:scale(.86)}
 .days button:hover{background:rgba(255,255,255,.18)}
 .days span{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;
   padding:0 12px;min-width:74px;text-align:center;white-space:nowrap}
@@ -95,9 +97,9 @@ body.editing .tstate{display:none}
 .chip{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:500;
   background:var(--paper-2);border:1px solid var(--rope);color:var(--ink);
   padding:7px 12px;border-radius:var(--radius);cursor:pointer;
-  transition:background .12s,color .12s,transform .08s}
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .12s ease}
 .chip:hover{border-color:var(--petrol-2)}
-.chip:active{transform:translateY(1px)}
+.chip:active{transform:scale(.95)}
 .chip[aria-pressed="true"]{background:var(--petrol);border-color:var(--petrol);color:var(--paper)}
 
 /* ---------- Packliste ---------- */
@@ -111,11 +113,14 @@ body.editing .tstate{display:none}
   border-bottom:1px solid rgba(205,198,182,.55)}
 .box{flex:none;width:21px;height:21px;margin-top:1px;border:1.5px solid var(--petrol);
   border-radius:var(--radius);background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;padding:0}
-.box svg{width:13px;height:13px;opacity:0;transition:opacity .12s}
+  display:flex;align-items:center;justify-content:center;padding:0;
+  transition:background .18s ease,transform .12s ease}
+.box:active{transform:scale(.86)}
+.box svg{width:13px;height:13px;opacity:0;transform:scale(.4);
+  transition:opacity .15s ease,transform .22s cubic-bezier(.34,1.56,.64,1)}
 .item.done .box{background:var(--petrol)}
-.item.done .box svg{opacity:1}
-.item .name{flex:1;cursor:pointer;min-width:0}
+.item.done .box svg{opacity:1;transform:scale(1)}
+.item .name{flex:1;cursor:pointer;min-width:0;transition:color .2s ease,opacity .2s ease}
 .item.done .name{color:var(--dim);text-decoration:line-through;text-decoration-thickness:1px}
 .qty{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;
   color:var(--petrol-2);background:var(--paper-2);padding:1px 6px;
@@ -172,6 +177,8 @@ body.editing #list,body.editing .actions .hide-edit{display:none}
 .edet select,.edet input[type=number],.edet input[type=text]{width:100%;font-family:inherit;font-size:15px;
   padding:8px 9px;border:1px solid var(--rope);border-radius:var(--radius);background:var(--paper);color:var(--ink)}
 .edet .chips .chip{font-size:13px;padding:5px 9px;background:var(--paper)}
+.edet .chips .chip[aria-pressed="true"]{background:var(--petrol);color:var(--paper);
+  border-color:var(--petrol)}
 .nums{display:flex;gap:7px}
 .nums>div{flex:1;min-width:0}
 .nums .lb{margin-bottom:4px}
@@ -188,7 +195,9 @@ body.editing #list,body.editing .actions .hide-edit{display:none}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 8px}
 .btn{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:600;
   background:transparent;border:1.5px solid var(--petrol);color:var(--petrol);
-  padding:9px 14px;border-radius:var(--radius);cursor:pointer}
+  padding:9px 14px;border-radius:var(--radius);cursor:pointer;
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .12s ease}
+.btn:active{transform:scale(.96)}
 .btn:hover{background:var(--petrol);color:var(--paper)}
 .btn.primary{background:var(--petrol);color:var(--paper)}
 .btn.primary:hover{background:var(--petrol-2);border-color:var(--petrol-2)}
@@ -258,7 +267,45 @@ body.editing #list,body.editing .actions .hide-edit{display:none}
   transition:opacity .2s,transform .2s;z-index:30}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ---------- Bewegung ---------- */
+@keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes viewIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes detIn{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.16)}100%{transform:scale(1)}}
+@keyframes flash{0%{background:rgba(240,180,41,.55)}100%{background:transparent}}
+@keyframes leave{to{opacity:0;transform:translateX(-16px)}}
+
+body:not(.editing) #list,body.editing #board{animation:viewIn .3s cubic-bezier(.2,.7,.3,1) both}
+.panel[data-open="true"] .panel-body{animation:detIn .24s ease both}
+.edet{animation:detIn .22s cubic-bezier(.2,.7,.3,1) both}
+.tripcard{transition:border-color .2s ease,box-shadow .2s ease,transform .16s ease}
+.tripcard:hover{transform:translateY(-1px)}
+.tripcard .tbar i{transition:width .45s cubic-bezier(.2,.7,.3,1)}
+.erow{transition:opacity .16s ease,background .3s ease}
+.erow.flash{animation:flash 1s ease}
+.erow.leaving,.edet.leaving{animation:leave .17s ease forwards}
+.bump{display:inline-block;animation:bump .3s cubic-bezier(.34,1.56,.64,1)}
+.ecat-head button,.erow .rx,.erow .rq{transition:color .15s ease,transform .12s ease}
+.ecat-head button:active,.erow .rx:active,.erow .rq:active{transform:scale(.88)}
+.erow-add,.col .add{transition:border-color .16s ease,color .16s ease,transform .12s ease}
+.erow-add:active{transform:scale(.99)}
+#eSearch,#tripName,.field input,.edet select,.edet input{transition:border-color .16s ease,background .16s ease}
+
+/* Staffelung: nur beim Ansichtswechsel, nicht bei jedem Haken */
+.stagger .cat,.stagger .ecat{animation:viewIn .3s cubic-bezier(.2,.7,.3,1) both}
+.stagger .cat:nth-of-type(2),.stagger .ecat:nth-of-type(2){animation-delay:.05s}
+.stagger .cat:nth-of-type(3),.stagger .ecat:nth-of-type(3){animation-delay:.1s}
+.stagger .cat:nth-of-type(4),.stagger .ecat:nth-of-type(4){animation-delay:.15s}
+.stagger .cat:nth-of-type(n+5),.stagger .ecat:nth-of-type(n+5){animation-delay:.2s}
+.stagger .item,.stagger .erow{animation:rowIn .3s cubic-bezier(.2,.7,.3,1) both}
+.stagger .item:nth-child(3),.stagger .erow:nth-child(3){animation-delay:.03s}
+.stagger .item:nth-child(4),.stagger .erow:nth-child(4){animation-delay:.06s}
+.stagger .item:nth-child(5),.stagger .erow:nth-child(5){animation-delay:.09s}
+.stagger .item:nth-child(6),.stagger .erow:nth-child(6){animation-delay:.12s}
+.stagger .item:nth-child(7),.stagger .erow:nth-child(7){animation-delay:.15s}
+.stagger .item:nth-child(n+8),.stagger .erow:nth-child(n+8){animation-delay:.18s}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (max-width:420px){h1{font-size:29px}}
 </style>
 </head>
@@ -542,7 +589,7 @@ function renderList(){
     }).join("")+`</section>`;
   }).join("");
   el.querySelectorAll(".item").forEach(row=>{
-    const id=row.dataset.id,t=()=>{T().checked[id]=!T().checked[id];touch();renderList();renderTrips();renderTripState();save();};
+    const id=row.dataset.id,t=()=>{T().checked[id]=!T().checked[id];touch();renderList();renderTrips();renderTripState();bump("mRight");save();};
     row.querySelector(".box").onclick=t;row.querySelector(".name").onclick=t;
   });
   renderMeter(byCat);
@@ -697,9 +744,14 @@ function wireEdit(){
   $("[data-del]").forEach(b=>b.onclick=()=>{
     const id=b.dataset.del;
     if(armed!=="item:"+id){armed="item:"+id;b.textContent="Wirklich löschen?";return;}
-    if(!S.removed.includes(id))S.removed.push(id);
-    S.custom=S.custom.filter(i=>i.id!==id);delete S.edits[id];
-    armed=null;expanded.delete(id);save();renderList();renderEdit();toast("Gelöscht");
+    const kill=()=>{
+      if(!S.removed.includes(id))S.removed.push(id);
+      S.custom=S.custom.filter(i=>i.id!==id);delete S.edits[id];
+      armed=null;expanded.delete(id);save();renderList();renderEdit();toast("Gelöscht");
+    };
+    const row=el.querySelector(`[data-row="${id}"]`),det=el.querySelector(`[data-det="${id}"]`);
+    if(row){row.classList.add("leaving");if(det)det.classList.add("leaving");setTimeout(kill,170);}
+    else kill();
   });
   $("[data-rst]").forEach(b=>b.onclick=()=>{
     delete S.edits[b.dataset.rst];save();renderList();renderEdit();toast("Auf Standard zurückgesetzt");
@@ -731,7 +783,8 @@ function wireEdit(){
     S.custom.push({id,n:"Neues Item",c:cid,m:mods,q:1});
     expanded.add(id);save();renderList();renderEdit();
     const inp=document.querySelector(`[data-name="${id}"]`);
-    if(inp){inp.focus();inp.select();inp.scrollIntoView({block:"center",behavior:"smooth"});}
+    if(inp){inp.focus();inp.select();inp.scrollIntoView({block:"center",behavior:"smooth"});
+      const row=inp.closest(".erow");if(row)row.classList.add("flash");}
   });
 }
 document.getElementById("eSearch").oninput=renderEdit;
@@ -787,7 +840,7 @@ function renderTrips(){
   el.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{
     S.curTrip=b.dataset.open;armed=null;
     document.getElementById("tripName").value=T().name||"";
-    renderDays();renderAll();save();toast(`„${T().name}" geöffnet`);
+    renderDays();renderAll();stagger("#list");save();toast(`„${T().name}" geöffnet`);
     window.scrollTo({top:0,behavior:"smooth"});
   });
   el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
@@ -801,13 +854,24 @@ function renderTrips(){
 function renderAll(){renderModules();renderList();renderEdit();renderTrips();renderTripState();}
 
 /* ============ Bedienung ============ */
+/* kurze Aufmerksamkeits-Animation, ohne die Logik anzufassen */
+function bump(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");
+  setTimeout(()=>el.classList.remove("bump"),320);
+}
+function stagger(sel){
+  const el=document.querySelector(sel);if(!el)return;
+  el.classList.add("stagger");
+  setTimeout(()=>el.classList.remove("stagger"),900);
+}
 function toast(msg){
   const t=document.getElementById("toast");
   t.textContent=msg;t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),1900);
 }
-document.getElementById("dMinus").onclick=()=>{T().days=Math.max(1,T().days-1);touch();renderDays();renderList();renderBoard();save();};
-document.getElementById("dPlus").onclick=()=>{T().days=Math.min(60,T().days+1);touch();renderDays();renderList();renderBoard();save();};
+document.getElementById("dMinus").onclick=()=>{T().days=Math.max(1,T().days-1);touch();renderDays();bump("dLabel");renderList();renderBoard();save();};
+document.getElementById("dPlus").onclick=()=>{T().days=Math.min(60,T().days+1);touch();renderDays();bump("dLabel");renderList();renderBoard();save();};
 document.getElementById("tripName").oninput=e=>{T().name=e.target.value;touch();renderTrips();save();};
 document.getElementById("panelToggle").onclick=()=>{
   const p=document.getElementById("panel"),open=p.dataset.open==="true";
@@ -817,7 +881,7 @@ document.getElementById("panelToggle").onclick=()=>{
 document.getElementById("editToggle").onclick=e=>{
   const on=document.body.classList.toggle("editing");
   e.target.textContent=on?"Fertig":"Items bearbeiten";
-  if(on)renderBoard();
+  if(on){renderBoard();stagger("#editGroups");}else stagger("#list");
 };
 document.getElementById("uncheck").onclick=()=>{T().checked={};touch();renderList();renderTrips();save();toast("Haken zurückgesetzt");};
 document.getElementById("saveTrip").onclick=()=>{
@@ -838,7 +902,7 @@ document.getElementById("newTripBtn").onclick=b=>{
   }
   armed=null;S.curTrip=null;S.draft=newTrip();
   document.getElementById("tripName").value="";
-  renderDays();renderAll();save();toast("Neue Reise angefangen");
+  renderDays();renderAll();stagger("#list");save();toast("Neue Reise angefangen");
 };
 async function copyText(txt,ok){
   try{await navigator.clipboard.writeText(txt);toast(ok);}
@@ -878,7 +942,7 @@ document.getElementById("bkImport").onclick=()=>{
 (function init(){
   probe();load();
   document.getElementById("tripName").value=T().name||"";
-  renderDays();renderAll();
+  renderDays();renderAll();stagger("#list");
 })();
 
 /* Offline-Betrieb */
